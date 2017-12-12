@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Title</title>
+    <meta charset="utf-8">
+    <style>
+      @import url(https://fonts.googleapis.com/css?family=Yanone+Kaffeesatz);
+      @import url(https://fonts.googleapis.com/css?family=Droid+Serif:400,700,400italic);
+      @import url(https://fonts.googleapis.com/css?family=Ubuntu+Mono:400,700,400italic);
+
+      body { font-family: 'Droid Serif'; }
+      h1, h2, h3 {
+        font-family: 'Yanone Kaffeesatz';
+        font-weight: normal;
+      }
+      .remark-code, .remark-inline-code { font-family: 'Ubuntu Mono'; }
+    </style>
+  </head>
+  <body>
+    <textarea id="source">
+
+class: center, middle
+
+# How do you do test driven development if you don't know how to write tests?
+
+---
+
+# Introduction
+- Nathan Brenner
+- https://crmblackbox.com/
+- Angular, Graphql, AWS Serverless
+- Bonfire, 2 apps, team of 6 devs split between two platforms -+ some personnel changes
+
+---
+
+# Starting place
+
+- Partially written features, bloated components, not very much abstraction, angular cli (some spec files but no tests),
+- "You should writes tests", "If you don't write tests from the start, you'll never get around to it"
+- Components needed refactoring (abstract classes, child components, unidirectional dataflow)
+- zero confidence that the code did what it was supposed to do, and the only way to know was to know every line
+
+---
+
+# Types of tests:
+- Unit (Jasmine/mocha)
+- Functional
+- Integration (Protractor)
+
+---
+
+# Get `ng test` to show green
+- If you start Karma and you get long error messages or failing tests, comment all the content in your spec files out
+
+---
+
+# Configure testbeds
+
+```javascript
+import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+
+import { LoginFormComponent } from './login-form.component';
+
+describe('LoginFormComponent', () => {
+  let component: LoginFormComponent;
+  let fixture: ComponentFixture<LoginFormComponent>;
+
+  beforeEach(async(() => {
+    TestBed.configureTestingModule({
+      declarations: [ LoginFormComponent ],
+      imports: [],
+      providers: [],
+    })
+    .compileComponents();
+  }));
+
+  beforeEach(() => {
+    fixture = TestBed.createComponent(LoginFormComponent);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+  });
+
+  it('should create', () => {
+    expect(component).toBeTruthy();
+  });
+});
+
+```
+
+- testbeds are a lot like angular modules
+- comment in one component's spec and address the first error message, save the file so the tests run again, and repeat
+- read the errors. Figure out what they mean and how to fix them. This is actually a lot easier to do than it was in angular js
+- often you'll need to inject components that are used in the component being tested
+- If you've injected services in any of these components, comment out that spec and move on (services should only be injeted in smart components). Add some inline comment in that spec for the reason why it's not commented in (like you don't know how to fix the error message)
+- if you get blocked, comment out the code, and move on
+
+---
+
+# Write a single `it` statement for every method on the class, comment it out
+
+```javascript
+export class LoginFormComponent {
+  bar() {
+    return 'bar';
+  }
+  foo() {
+    return 'foo';
+  }
+}
+
+it('should create', () => {
+  expect(component).toBeTruthy();
+});
+// it('#bar', () => {});
+// it('#foo', () => {});
+```
+
+---
+
+# write tests for the pure functions
+-  no side effects, no modification of the state, returns a value, given the same input, always returns the same output (it's very easy to write tests)
+
+```
+foo(value) {
+  return value ? 'a' : 'b';
+}
+
+it('#foo returns a string', () => {
+  expect(component.foo(true)).toBe('a');
+});
+```
+
+---
+
+# Write tests for custom pipes, directives, reducers, services (these are usually pure functions, and they don't require as much configuration)
+- 1 service that injects http (wrapper service), and is injected into the rest of the services
+- this should let you abstract a lot of the repeated code like creating headers, authorization, handling errors,
+- You can write tests for these methods (like calling http.get), but this can be a black hole (as is the case with integration tests)
+- 1 service per model, a method per endpoint or http request on that model
+- Tests for these service methods can just check that the endpoint req matches the api endpoint and if there's a body, the body matches what is required for the request.
+
+---
+
+# write tests that have site effects
+
+```javascript
+foo() {
+  this.bar();
+}
+
+it('#foo calls bar', () => {
+  spyOn(component, 'bar');
+  component.foo();
+  expect(component.bar).toHaveBeenCalled();
+});
+```
+
+---
+
+# During this process, make notes on tests that are hard to write (write them anyway, don't refactor yet) because the goal is to just get a specific value on how much your code aways works.
+- Does your code work or does the app work? => It works 80% of the time that it's being used
+- as you find different ways a feature could be used (like a method is called with different values), write additional tests for those methods
+
+---
+
+Next steps:
+- e2e test coverage: Page Objects, tests that check behavior and styles in one browser than many
+- CI integration: tests get ran on every push
+- multiple deployments (developmnt and production)
+  - check new features or changes to a copy of the app that live users aren't using on development instance
+  - Only push throughly vetted changes to production (keep your users happy)
+
+---
+
+Conclusion
+- Over the course of this process, you can keep meeting the needs of your employer by adding features and fixing bugs.
+- Add tests with your spare time, even if that means outside the office hours, because you'll learn patterns that you can use in future projects, you're project will become more stable, and when you hand off your project to someone else, they'll have resources to understand why you wrote the code in the way that you did.
+- Another big win: You can motivate other members of your team to write tests because you can show them how
+- You can defend the value of unit tests in the fontend to your boss
+- "Does foo work?" => "Yes, because I have test coverage, here it is, these are the conditons on how it works, it runs every time we promote the app to production, is this current feature meeting the business needs (specificially how is it not because maybe you've gotten feedback that it's not working the way I wrote it)
+
+    </textarea>
+    <script src="https://remarkjs.com/downloads/remark-latest.min.js">
+    </script>
+    <script>
+      var slideshow = remark.create();
+    </script>
+  </body>
+</html>
