@@ -29,7 +29,7 @@ class: center, middle
 - Nathan Brenner
 - https://crmblackbox.com/
 - Angular, Graphql, AWS Serverless
-- Bonfire, 2 apps, team of 6 devs split between two platforms -+ some personnel changes
+- Bonfire, 2 apps, team of 6 devs split between two platforms
 
 ---
 
@@ -47,10 +47,20 @@ class: center, middle
 - Functional
 - Integration (Protractor)
 
+# TDD
+- Write a test that should fail
+- Write only enough code to get the test to pass
+- Refactor the test
+- repeat
+- but if you have existing code...write tests that prove the code works as it's intended
+- then refactor later => Code Driven Development...and do TDD when you refactor or write new code
+
 ---
 
-# Get `ng test` to show green
-- If you start Karma and you get long error messages or failing tests, comment all the content in your spec files out
+# Get your test runner to show green
+- The angular cli uses Karma and Jasmine
+- If you start Karma and you get long error messages or failing tests, don't panic
+- comment all the content in your spec files out
 
 ---
 
@@ -120,7 +130,7 @@ it('should create', () => {
 # write tests for the pure functions
 -  no side effects, no modification of the state, returns a value, given the same input, always returns the same output (it's very easy to write tests)
 
-```
+```javascript
 foo(value) {
   return value ? 'a' : 'b';
 }
@@ -132,14 +142,14 @@ it('#foo returns a string', () => {
 
 ---
 
-# Write tests for custom pipes, directives, reducers, services (these are usually pure functions, and they don't require as much configuration)
+<!-- # Write tests for custom pipes, directives, reducers, services (these are usually pure functions, and they don't require as much configuration)
 - 1 service that injects http (wrapper service), and is injected into the rest of the services
 - this should let you abstract a lot of the repeated code like creating headers, authorization, handling errors,
 - You can write tests for these methods (like calling http.get), but this can be a black hole (as is the case with integration tests)
 - 1 service per model, a method per endpoint or http request on that model
 - Tests for these service methods can just check that the endpoint req matches the api endpoint and if there's a body, the body matches what is required for the request.
 
----
+--- -->
 
 # write tests that have site effects
 
@@ -157,27 +167,47 @@ it('#foo calls bar', () => {
 
 ---
 
-# During this process, make notes on tests that are hard to write (write them anyway, don't refactor yet) because the goal is to just get a specific value on how much your code aways works.
-- Does your code work or does the app work? => It works 80% of the time that it's being used
+# Don't refactor yet
+- make notes on tests that are hard to write
+- the goal is to just improve your test coverage so you know where features work and where they don't.
 - as you find different ways a feature could be used (like a method is called with different values), write additional tests for those methods
+- if typescript, add types
+
+```javascript
+foo(value: string): string {
+  // This method has no real value, and is just used to make a point
+  return value ? 'a' : 'b';
+}
+
+it('#foo with a truthy value returns "a"', () => {
+  expect(component.foo('true')).toBe('a');
+});
+it('#foo with a falsy value returns "b"', () => {
+  expect(component.foo('')).toBe('b');
+});
+```
 
 ---
 
-Next steps:
-- e2e test coverage: Page Objects, tests that check behavior and styles in one browser than many
-- CI integration: tests get ran on every push
-- multiple deployments (developmnt and production)
+# Next steps:
+- e2e test coverage: Page Objects, tests that check behavior and styles in one browser...then add coverage that checks other browsers
+- CI/CD integration: tests get ran on every push
+- multiple deployments (development and production)
   - check new features or changes to a copy of the app that live users aren't using on development instance
   - Only push throughly vetted changes to production (keep your users happy)
 
 ---
 
-Conclusion
+# Conclusion
 - Over the course of this process, you can keep meeting the needs of your employer by adding features and fixing bugs.
-- Add tests with your spare time, even if that means outside the office hours, because you'll learn patterns that you can use in future projects, you're project will become more stable, and when you hand off your project to someone else, they'll have resources to understand why you wrote the code in the way that you did.
-- Another big win: You can motivate other members of your team to write tests because you can show them how
-- You can defend the value of unit tests in the fontend to your boss
-- "Does foo work?" => "Yes, because I have test coverage, here it is, these are the conditons on how it works, it runs every time we promote the app to production, is this current feature meeting the business needs (specificially how is it not because maybe you've gotten feedback that it's not working the way I wrote it)
+
+- Refactoring without code coverage will just cause you more pain
+
+- a rising tide lifts all boats: Show your team how to do this so the platform becomes more stable
+
+- Tests will teach you how to write better code: If a test is hard to write for a method...the method is probably bad code (or you need to learn more about testing)
+
+- "Does foo work?" => "Yes, because I have test coverage, here it is, these are the conditons on how it works, it runs every time we promote the app to production. What changes do you want on this feature?
 
     </textarea>
     <script src="https://remarkjs.com/downloads/remark-latest.min.js">
