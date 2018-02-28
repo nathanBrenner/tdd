@@ -1,19 +1,27 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Title</title>
+    <title>CDD => TDD</title>
     <meta charset="utf-8">
     <style>
       @import url(https://fonts.googleapis.com/css?family=Yanone+Kaffeesatz);
       @import url(https://fonts.googleapis.com/css?family=Droid+Serif:400,700,400italic);
       @import url(https://fonts.googleapis.com/css?family=Ubuntu+Mono:400,700,400italic);
 
-      body { font-family: 'Droid Serif'; }
+      body {
+        font-family: 'Droid Serif';
+        background-color: black;
+        /* color: white; */
+      }
       h1, h2, h3 {
         font-family: 'Yanone Kaffeesatz';
         font-weight: normal;
       }
       .remark-code, .remark-inline-code { font-family: 'Ubuntu Mono'; }
+      .remark-slide-content {
+        background-color: black;
+        color: white;
+      }
     </style>
   </head>
   <body>
@@ -21,24 +29,17 @@
 
 class: center, middle
 
-# How do you do test driven development if you don't know how to write tests?
-
----
-
-# Introduction
-- Nathan Brenner
-- https://crmblackbox.com/
-- Angular, Graphql, AWS Serverless
-- Bonfire, 2 apps, team of 6 devs split between two platforms
+# ¯\_(ツ)_/¯ Works on my machine: a practical approach to TDD?
+*Nathan Brenner*
 
 ---
 
 # Starting place
 
 - Partially written features, bloated components, not very much abstraction, angular cli (some spec files but no tests),
-- "You should writes tests", "If you don't write tests from the start, you'll never get around to it"
+- "You should writes tests", "If you don't write tests from the start, you'll never get around to it", "I don't have time to write tests", "Typescript avoids the need for tests"
 - Components needed refactoring (abstract classes, child components, unidirectional dataflow)
-- zero confidence that the code did what it was supposed to do, and the only way to know was to know every line
+- zero confidence (proof) that the code did what it was supposed to do, and the only way to know was to know every line
 
 ---
 
@@ -46,6 +47,9 @@ class: center, middle
 - Unit (Jasmine/mocha)
 - Functional
 - Integration (Protractor)
+<img src="https://automationpanda.files.wordpress.com/2017/10/the-testing-pyramid.png?w=620">
+
+---
 
 # TDD
 - Write a test that should fail
@@ -61,6 +65,7 @@ class: center, middle
 - The angular cli uses Karma and Jasmine
 - If you start Karma and you get long error messages or failing tests, don't panic
 - comment all the content in your spec files out
+- or `['it(..', 'it...'].map(it => xit));` (mark all tests as pending)
 
 ---
 
@@ -97,16 +102,24 @@ describe('LoginFormComponent', () => {
 
 ```
 
+---
+
+# Testbed?
+
 - testbeds are a lot like angular modules
-- comment in one component's spec and address the first error message, save the file so the tests run again, and repeat
-- read the errors. Figure out what they mean and how to fix them. This is actually a lot easier to do than it was in angular js
+- switch xit one at a time in one component's spec and address the first error message, save the file so the tests run again, and repeat
+- Modify the `context` in test.js so that only the tests that run are the test suite you're working on
+- read the errors. Figure out what they mean and how to fix them. This is actually a lot easier to do than it was in angularjs
 - often you'll need to inject components that are used in the component being tested
 - If you've injected services in any of these components, comment out that spec and move on (services should only be injeted in smart components). Add some inline comment in that spec for the reason why it's not commented in (like you don't know how to fix the error message)
 - if you get blocked, comment out the code, and move on
 
+## => read the docs
+- If you apply what you read, it will stick
+
 ---
 
-# Write a single `it` statement for every method on the class, comment it out
+# Write a single `xit` statement for every method on the class
 
 ```javascript
 export class LoginFormComponent {
@@ -118,17 +131,28 @@ export class LoginFormComponent {
   }
 }
 
-it('should create', () => {
-  expect(component).toBeTruthy();
+describe('LoginFormComponent', () => {
+  // beforeEach...
+
+  it('should create', () => {
+    expect(component).toBeTruthy();
+  });
+
+  xit('#bar', () => {});
+
+  xit('#foo', () => {});
 });
-// it('#bar', () => {});
-// it('#foo', () => {});
 ```
 
 ---
 
 # write tests for the pure functions
--  no side effects, no modification of the state, returns a value, given the same input, always returns the same output (it's very easy to write tests)
+-  no side effects
+-  no modification of the state
+-  returns a value
+-  given the same input, always returns the same output
+-  easiest tests to write
+-  Use the same type of input as you would use on your app
 
 ```javascript
 foo(value) {
@@ -142,16 +166,21 @@ it('#foo returns a string', () => {
 
 ---
 
-<!-- # Write tests for custom pipes, directives, reducers, services (these are usually pure functions, and they don't require as much configuration)
+# custom pipes, directives, reducers, services
+
+- these are usually pure functions, and they don't require as much configuration
 - 1 service that injects http (wrapper service), and is injected into the rest of the services
 - this should let you abstract a lot of the repeated code like creating headers, authorization, handling errors,
 - You can write tests for these methods (like calling http.get), but this can be a black hole (as is the case with integration tests)
-- 1 service per model, a method per endpoint or http request on that model
+- 1 service per model, a method per endpoint
 - Tests for these service methods can just check that the endpoint req matches the api endpoint and if there's a body, the body matches what is required for the request.
 
---- -->
+---
 
 # write tests that have site effects
+
+- spies: test double functions
+- They track information on functions that get called
 
 ```javascript
 foo() {
